@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-langchain-openai
-numpy
-pydantic
-openai
-faiss-cpu
