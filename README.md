@@ -9,6 +9,18 @@
 docker build -t rag_demo .
 docker run -p 8000:8000 --name rag_demo rag_demo
 ```
+## Usage
+### 1. Multimodal RAG
+输入：
+- query: str,  # 用户查询
+- text: List[str], # 文本
+- images: List[str], # 图像的文件路径
+
+输出：answer
+
+示例 demo：`test/multimodel_demo.ipynb`
+
+
 
 ## API
 ### 1. 根据 query 以及 chunks 获取答案

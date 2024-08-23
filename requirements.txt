@@ -5,3 +5,5 @@ numpy
 pydantic
 openai
 faiss-cpu
+pillow
+transformers
