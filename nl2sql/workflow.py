@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, List
 
-from constants.prompts import GENERATE_SQL_PROMPTS, SQL_QUERY_ANSWER_PROMPTS, GENERATE_SQL_PROMPTS_V2
+from constants.prompts import NL2SQLPrompts
 from constants.type import GenerateSQLResponse, RDBType
 from core.retrieval.pre_retrieval import PreRetrievalService
 from model.llm import DMetaLLM
@@ -12,60 +12,80 @@ logger = logging.getLogger(__name__)
 
 
 class NL2SQLWorkflow:
-    def __init__(self, db_instance: DBInstance):
+    def __init__(self, db_instance: DBInstance, query: str, need_similarity_sql: bool = True):
         self.db_instance = db_instance
         self.llm = DMetaLLM()  # init LLM model
+        self.origin_query = query
+        self.text_to_sql_query: Optional[str] = None  # used for sql generation
+        self.interpretation_query: Optional[str] = None  # used for final response generation
+        self.related_table_summary: Optional[str] = None  # Table information related to the query
+        self.first_sql_query: Optional[str] = None  # SQL query generated from the query for the first time
+        self.final_sql_query: Optional[str] = None  # SQL query generated from the query using the similarity SQL
+        self.similarity_sql: Optional[List[str]] = None  #
+        self.need_similarity_sql = need_similarity_sql
+        self.sql_result: Optional[str] = None
+        self.__init_basic_info()
 
-    def get_related_table_summary(self, query: str, top_k: int = 5):
+    def __init_basic_info(self):
+        self.related_table_summary = self._get_related_table_summary()
+        query_response = PreRetrievalService.decompose_for_sql(self.origin_query)
+        self.text_to_sql_query = query_response.text_to_sql_query
+        self.interpretation_query = query_response.interpretation_query
+        self.first_sql_query = self._get_first_sql_query()
+        self.similarity_sql = self._get_similarity_query()
+        self.final_sql_query = self._get_final_sql_query()
+        self.sql_result = self._get_sql_result()
+
+    def _get_related_table_summary(self, top_k: int = 5):
         """Get related chunks based on the query."""
-        return self.db_instance.summary_index.search_for_chunks(query, top_k=top_k)
+        return self.db_instance.summary_index.search_for_chunks(self.origin_query, top_k=top_k)
 
-    def get_sql_query(self, query: str, table_summary: Optional[str] = None, similarity_sql: Optional[List[str]] = None):
+    def _get_first_sql_query(self):
         """Get SQL query from the given query."""
-        table_summary = table_summary if table_summary else self.get_related_table_summary(query)
+        if self.text_to_sql_query:
+            return self.text_to_sql_query
 
-        if similarity_sql:
-            sql_res = self.llm.get_structured_response(
-                GENERATE_SQL_PROMPTS_V2.format(table_info=table_summary, input=query, similarity_sql=similarity_sql),
-                response_format=GenerateSQLResponse,
-            )
-        else:
-            sql_res = self.llm.get_structured_response(
-                GENERATE_SQL_PROMPTS.format(table_info=table_summary, input=query),
-                response_format=GenerateSQLResponse,
-            )
+        sql_res = self.llm.get_structured_response(
+            NL2SQLPrompts.GENERATE_SQL.format(table_info=self.related_table_summary, input=self.text_to_sql_query),
+            response_format=GenerateSQLResponse,
+        )
 
-        logging.info(f"sql_res:{sql_res}")
+        self.first_sql_query = sql_res["sql_query"]
+        logging.info(f"sql_query:{self.first_sql_query}")
+        return self.first_sql_query
 
-        return sql_res["sql_query"]
+    def _get_similarity_query(self, top_k: int = 5) -> List[str]:
+        """Get similar SQL query based on the query."""
+        return self.db_instance.sql_example_index.search_for_chunks(self.first_sql_query, top_k)
 
-    def get_sql_result(self, query: str, sql_query: Optional[str] = None):
+    def _get_final_sql_query(self):
+        """Get the final SQL query."""
+        if self.final_sql_query:
+            return self.final_sql_query
+
+        if not self.need_similarity_sql:
+            self.final_sql_query = self.first_sql_query
+            return self.final_sql_query
+
+        self.final_sql_query = self.llm.get_structured_response(
+            NL2SQLPrompts.GENERATE_SQL_WITH_SIMILARITY.format(
+                table_info=self.related_table_summary,
+                input=self.text_to_sql_query,
+                similarity_sql=self.similarity_sql,
+            ), response_format=GenerateSQLResponse,
+        )["sql_query"]
+
+        return self.final_sql_query
+
+    def _get_sql_result(self):
         """executing the sql query."""
-        sql_query = sql_query if sql_query else self.get_sql_query(query)
-        logging.info(f"sql_query:{sql_query}")
-        return self.db_instance.db.run_no_throw(sql_query)
+        logging.info(f"sql_query:{self.final_sql_query}")
+        return self.db_instance.db.run_no_throw(self.final_sql_query)
 
-    def get_sql_query_similarity(self, query: str, top_k: int = 5) -> List[str]:
-        return self.db_instance.sql_example_index.search_for_chunks(query, top_k)
-
-    def get_response(self, query: str, sql_query: Optional[str] = None, sql_res: Optional[str] = None):
+    def get_response(self):
         """Get response based on the query."""
-        response = PreRetrievalService.decompose_for_sql(query)
-        logging.info(f"text_to_sql_query:{response.datasets_query}")
-        logging.info(f"rag_for_query:{response.interpretation_query}")
-
-        if not sql_query:
-            sql_query = self.get_sql_query(response.datasets_query)  # 第一次生成 sql 不准确，检索相似的正确样本，再重新生成一次。
-
-        sql_similarity = self.get_sql_query_similarity(sql_query)  # 检索相似的正确 sql 样本
-        sql_query = self.get_sql_query(query=response.datasets_query, similarity_sql=sql_similarity)  # 二次生成sql
-        print(sql_query)
-
-        if not sql_res:
-            sql_res = self.get_sql_result(response.datasets_query, sql_query)
-
         llm_res = self.llm.get_response(
-            query=SQL_QUERY_ANSWER_PROMPTS.format(question=query, query=response.interpretation_query, result=sql_res))
+            query=NL2SQLPrompts.SQL_QUERY_ANSWER.format(question=self.origin_query, sql_query=self.final_sql_query, sql_result=self.sql_result))
 
         return llm_res
 
@@ -74,6 +94,6 @@ if __name__ == "__main__":
     # basic use case
     instance = DBInstance(db_type=RDBType.MySQL.value, db_name="classicmodels")
     query = "what is price of `1968 Ford Mustang`"
-    service = NL2SQLWorkflow(instance)
-    res = service.get_response("what is price of `1968 Ford Mustang`")
+    service = NL2SQLWorkflow(instance, query)
+    res = service.get_response()
     print(res)

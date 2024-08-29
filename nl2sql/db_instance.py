@@ -79,8 +79,7 @@ class DBInstance:
 
     def db_update(self):
         """Notify the state machine of a database update."""
-        if self.db_key in self._state_machines and self._state_machines[
-            self.db_key].db_state is not NL2SQLState.UPDATING:
+        if self.db_key in self._state_machines and self._state_machines[self.db_key].db_state is not NL2SQLState.UPDATING:
             logger.info(f"Updating state machine for {self.db_key}")
             with self._lock:
                 self._state_machines[self.db_key].on_notification()

@@ -19,7 +19,7 @@ class HydeResponse(BaseModel):
 
 
 class DecomposeQueryResponse(BaseModel):
-    datasets_query: str
+    text_to_sql_query: str
     interpretation_query: str
 
 
