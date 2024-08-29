@@ -6,8 +6,7 @@ Description: RetrievalService class for searching text chunks.
 
 import logging
 from typing import List
-from recall.faiss_wrapper import FaissWrapper
-from recall.jina_clip_wrapper import JinaClipWrapper
+from core.vector_database.jina_clip_wrapper import JinaClipWrapper
 from utility.tools import load_images_from_folder
 
 logger = logging.getLogger(__name__)
@@ -59,7 +58,7 @@ if __name__ == "__main__":
     # print(hybrid_res)
 
     # usage2:
-    query = "在 recall 之后应该做什么？"
+    query = "在 retrieval 之后应该做什么？"
 
     texts = ['A pig', 'A red cat', "A red pig"]
     image_folder = '../model/image_dataset'

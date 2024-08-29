@@ -5,9 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from constants.prompts import CN_RAG_PROMPTS
 from constants.type import RAGRequest
 from model.llm import DMetaLLM
-from recall.faiss_wrapper import FaissWrapper
-from recall.pre_retrieval import PreRetrievalService
-from recall.retrieval import RetrievalService
+from core.vector_database.faiss_wrapper import FaissWrapper
+from core.retrieval.pre_retrieval import PreRetrievalService
+from core.retrieval.retrieval import RetrievalService
 
 
 logging.basicConfig(format='%(asctime)s %(pathname)s line:%(lineno)d [%(levelname)s] %(message)s', level='INFO')

@@ -72,7 +72,7 @@ if __name__ == "__main__":
     images = load_images_from_folder(image_folder)
 
     jina_clip_wrapper = JinaClipWrapper(texts, images)
-    query = "在 recall 之后应该做什么？"
+    query = "在 retrieval 之后应该做什么？"
     res = jina_clip_wrapper.search_for_multimodal(query)
 
     print(res)

@@ -1,3 +1,5 @@
+import json
+
 from openai import OpenAI
 import os
 from constants.type import LLMModel
@@ -11,7 +13,6 @@ class DMetaLLM:
         self.client = OpenAI(api_key=api_key, base_url=base_url)  # temporarily using openai service
 
     def get_response(self, query: str):
-        print("base_url: ", self.base_url)
         completion = self.client.chat.completions.create(
             model=LLMModel.Default.value,
             messages=[
@@ -30,7 +31,7 @@ class DMetaLLM:
             response_format=response_format,
         )
 
-        return completion.choices[0].message.content
+        return json.loads(completion.choices[0].message.content)
 
     def get_multimodal_response(self, query: str, contexts):
         texts = contexts.get("texts", "")

@@ -18,6 +18,16 @@ class HydeResponse(BaseModel):
     hyde: str
 
 
+class DecomposeQueryResponse(BaseModel):
+    datasets_query: str
+    interpretation_query: str
+
+
+class GenerateSQLResponse(BaseModel):
+    original_query: str
+    sql_query: str
+
+
 class LLMModel(Enum):
     Default = "gpt-4o-mini"
     GPT_latest = "chatgpt-4o-latest"
@@ -27,3 +37,8 @@ class LLMModel(Enum):
     Moonshoot_v1_8k = "moonshot-v1-8k"
 
 
+class RDBType(Enum):
+    """Database type enumeration."""
+    MySQL = "mysql"
+    SQLite = "sqlite"
+    Postgresql = "postgresql"

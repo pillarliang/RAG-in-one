@@ -178,7 +178,7 @@ class FaissWrapper:
                 scores[idx] = distances[i][j]
         return scores
 
-    def search_for_chunks(self, query, top_k):
+    def search_for_chunks(self, query, top_k=3):
         """
         search and return sorted text chunks.
 

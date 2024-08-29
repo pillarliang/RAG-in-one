@@ -7,3 +7,9 @@ openai
 faiss-cpu
 pillow
 transformers
+sqlalchemy
+torch
+pgvector
+faiss
+python-dotenv
+psycopg
