@@ -1,8 +1,10 @@
+import json
 import os
 import threading
 import logging
 
-from constants.type import GenerateSQLResponse, RDBType
+from constants.prompts import CREATE_SAMPLE_SQL_FROM_TABLE
+from constants.type import GenerateSQLResponse, RDBType, GenerateSampleSQLResponse
 from model.llm import DMetaLLM
 from nl2sql.database.sql_factory import rdb_factory
 from core.vector_database.faiss_wrapper import FaissWrapper
@@ -42,7 +44,9 @@ class DBInstance:
 
         self.llm = DMetaLLM()  # init LLM model
         self.db_summary = self.get_db_summary()
-        self.vector_index = FaissWrapper(text_chunks=self.db_summary)
+        self.sql_example = self._get_sql_example_llm()
+        self.summary_index = FaissWrapper(text_chunks=self.db_summary)
+        self.sql_example_index = FaissWrapper(text_chunks=self.sql_example)
 
         # init state machine
         self.db_key = (self.db_type, self.db_name)
@@ -55,9 +59,28 @@ class DBInstance:
         """Get database summary used for constructing prompts."""
         return self.db.get_db_summary()
 
+    @property
+    def sql_example_llm(self):
+        return self.sql_example
+
+    def _get_sql_example_llm(self):
+        """Get sql example: ⚠️有多少个表就调多少次 LLM，应该收集整理有代表性的 SQL 查询示例来代理每次 LLM 生成"""
+
+        table_info = self.db.get_table_info()
+        table_info_list = table_info.split("\n\n\n")
+        sample_sql = []
+
+        for table in table_info_list:
+            response = self.llm.get_structured_response(CREATE_SAMPLE_SQL_FROM_TABLE.format(table_info=table),
+                                                        response_format=GenerateSampleSQLResponse)
+            sample_sql.extend(response["sql_list"])
+
+        return sample_sql
+
     def db_update(self):
         """Notify the state machine of a database update."""
-        if self.db_key in self._state_machines and self._state_machines[self.db_key].db_state is not NL2SQLState.UPDATING:
+        if self.db_key in self._state_machines and self._state_machines[
+            self.db_key].db_state is not NL2SQLState.UPDATING:
             logger.info(f"Updating state machine for {self.db_key}")
             with self._lock:
                 self._state_machines[self.db_key].on_notification()
@@ -66,13 +89,17 @@ class DBInstance:
 
 
 if __name__ == "__main__":
-    # basic use case
-    db_instance = DBInstance(db_type=RDBType.MySQL.value, db_name="classicmodels")
-    res = db_instance.get_db_summary()
-    print(res)
+    # # basic use case
+    # db_instance = DBInstance(db_type=RDBType.MySQL.value, db_name="classicmodels")
+    # res = db_instance.get_db_summary()
+    # print(res)
+    #
+    # # 模拟数据库更新通知
+    # print("\nSimulating database update for instance:")
+    # db_instance.db_update()
+    # res2 = db_instance.get_db_summary()
+    # print(res2)
 
-    # 模拟数据库更新通知
-    print("\nSimulating database update for instance:")
-    db_instance.db_update()
-    res2 = db_instance.get_db_summary()
-    print(res2)
+    db_instance = DBInstance(db_type=RDBType.MySQL.value, db_name="classicmodels")
+    res = db_instance.sql_example_llm
+    print(res)

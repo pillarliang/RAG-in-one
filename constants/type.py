@@ -28,6 +28,10 @@ class GenerateSQLResponse(BaseModel):
     sql_query: str
 
 
+class GenerateSampleSQLResponse(BaseModel):
+    sql_list: List[str]
+
+
 class LLMModel(Enum):
     Default = "gpt-4o-mini"
     GPT_latest = "chatgpt-4o-latest"
