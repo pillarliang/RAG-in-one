@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="dmeta" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="dmeta" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="rag" project-jdk-type="Python SDK" />
 </project>

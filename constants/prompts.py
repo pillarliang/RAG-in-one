@@ -75,6 +75,16 @@ class NL2SQLPrompts:
     """
 
 
+class QueryRoutingPrompts:
+    SINGLE_SELECT = """
+    Some choices are given below. It is provided in a numbered list, where each item in the list corresponds to a summary and a module name.
+    ---------------------
+    {router_list}
+    ---------------------
+    Using only the choices above and not prior knowledge, generate the selection object and reason that is most relevant to the question: '{query}'
+    """
+
+
 EN_RAG_PROMPTS = """
 CONTEXTS:
 {contexts}
