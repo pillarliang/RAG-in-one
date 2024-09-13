@@ -68,8 +68,9 @@ class JinaClipWrapper:
 
 if __name__ == "__main__":
     texts = ['A pig', 'A red cat', "A red pig"]
-    image_folder = '../model/image_dataset'
+    image_folder = '../../model/image_dataset'
     images = load_images_from_folder(image_folder)
+    print(images)
 
     jina_clip_wrapper = JinaClipWrapper(texts, images)
     query = "在 retrieval 之后应该做什么？"

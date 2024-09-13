@@ -12,4 +12,3 @@ torch
 pgvector
 faiss
 python-dotenv
-psycopg
