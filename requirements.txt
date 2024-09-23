@@ -4,11 +4,11 @@ langchain-openai
 numpy
 pydantic
 openai
-faiss-cpu
+faiss-gpu
 pillow
 transformers
 sqlalchemy
 torch
 pgvector
-faiss
 python-dotenv
+byaldi
