@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Union
 from enum import Enum
 
 
@@ -30,6 +30,11 @@ class GenerateSQLResponse(BaseModel):
 
 class GenerateSampleSQLResponse(BaseModel):
     sql_list: List[str]
+
+
+class MultiModalParameters(BaseModel):
+    texts: Union[List[str], str]
+    images: Union[List[str], str]
 
 
 class LLMModel(Enum):

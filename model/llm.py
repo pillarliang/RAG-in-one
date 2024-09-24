@@ -2,7 +2,7 @@ import json
 
 from openai import OpenAI
 import os
-from constants.type import LLMModel
+from constants.type import LLMModel, MultiModalParameters
 from utility.tools import batch_image_to_base64
 
 
@@ -33,10 +33,10 @@ class DMetaLLM:
 
         return json.loads(completion.choices[0].message.content)
 
-    def get_multimodal_response(self, query: str, contexts):
+    def get_multimodal_response(self, query: str, contexts: MultiModalParameters):
         texts = contexts.get("texts", "")
         images = contexts.get("images", "")
-        encoded_images = batch_image_to_base64(images)
+        encoded_images = images and batch_image_to_base64(images)
 
         prompts = f"""
         请根据所提供的上下文以及图片信息回答问题而不是先验知识来回答以下的查询。如果上下文无法回答问题，请返回:暂找不到相关问题，请重新提供问题。
