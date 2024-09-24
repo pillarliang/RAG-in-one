@@ -1,6 +1,8 @@
 
 ```
+conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
 sudo yum install poppler-utils
+pip install pdf2image byaldi
 ```
 
 There is something to note here.
