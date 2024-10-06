@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List
+from typing import List, Optional
 from openai import OpenAI
 from constants.type import LLMModel, MultiModalParameters
 from utility.tools import batch_image_to_base64, PIL_2_base64, is_PIL_image, is_base64_image, is_base64
@@ -8,28 +8,24 @@ from utility.tools import batch_image_to_base64, PIL_2_base64, is_PIL_image, is_
 os.environ["OPENAI_API_KEY"] = "sk-sduyrRdYYOdGP4x06e97DdDe7bA74c7e8a5aC1051d5a2831"
 os.environ["OPENAI_BASE_URL"] = "https://aihubmix.com/v1"
 
-class DMetaLLM:
+
+class LLM:
     def __init__(self, api_key: str = None, base_url: str = None, model: str = None):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         self.base_url = base_url or os.getenv("OPENAI_BASE_URL")
         self.client = OpenAI(api_key=api_key, base_url=base_url)  # temporarily using openai service
 
-    def get_response(self, query: str):
+    def get_response(self, query: Optional[str, List[str]]):
         completion = self.client.chat.completions.create(
             model=LLMModel.Default.value,
-            messages=[
-                {"role": "user", "content": query},
-            ],
+            messages=self._get_messages_for_llm(query),
         )
         return completion.choices[0].message.content
 
     def get_structured_response(self, query: str, response_format):
         completion = self.client.beta.chat.completions.parse(
             model=LLMModel.Default.value,
-            # TODO: currently using a specific model, due to only lasted model support structured response
-            messages=[
-                {"role": "user", "content": query}
-            ],
+            messages=self._get_messages_for_llm(query),
             response_format=response_format,
         )
 
@@ -72,6 +68,21 @@ class DMetaLLM:
 
         return completion.choices[0].message.content
 
+    def _get_messages_for_llm(self, query: Optional[str, List[str]]):
+        if isinstance(query, list):
+            messages = query
+        else:
+            messages = [{"role": "user", "content": query}]
+        return messages
+
+    def get_response_with_tools(self, tools: list, messages: list):
+        response = self.client.chat.completions.create(
+            model=LLMModel.Default.value,
+            messages=messages,
+            tools=tools,
+            tool_choice="required"
+        )
+        return response
 
     def ask_images(self, query: str, images: List[str]):
         """Temporarily used for testing"""
@@ -101,10 +112,8 @@ class DMetaLLM:
         return completion.choices[0].message.content
 
 
-
-
 if __name__ == "__main__":
-    llm = DMetaLLM()
+    llm = LLM()
     res = llm.get_response("What is the capital of China?")
     print(res)
 

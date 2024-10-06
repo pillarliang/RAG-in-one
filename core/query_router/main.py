@@ -3,7 +3,7 @@ from typing import List
 from pydantic import BaseModel
 
 from constants.prompts import QueryRoutingPrompts
-from model.llm import DMetaLLM
+from model.llm import LLM
 
 
 class SingleSelection(BaseModel):
@@ -35,7 +35,7 @@ class QueryRouter:
 
     def query(self, query: str) -> SingleSelection:
         prompts = QueryRoutingPrompts.SINGLE_SELECT.format(query=query, router_list=self.query_routes)
-        llm = DMetaLLM()
+        llm = LLM()
         return llm.get_structured_response(query=prompts, response_format=SingleSelection)
 
     @classmethod

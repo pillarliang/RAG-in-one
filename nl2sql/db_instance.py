@@ -5,7 +5,7 @@ import logging
 
 from constants.prompts import CREATE_SAMPLE_SQL_FROM_TABLE
 from constants.type import GenerateSQLResponse, RDBType, GenerateSampleSQLResponse
-from model.llm import DMetaLLM
+from model.llm import LLM
 from nl2sql.database.sql_factory import rdb_factory
 from core.vector_database.faiss_wrapper import FaissWrapper
 from utility.db_state_machine import NL2SQLStateMachine, NL2SQLState
@@ -42,7 +42,7 @@ class DBInstance:
 
         self.db = rdb_factory(db_type=self.db_type, db_name=self.db_name)
 
-        self.llm = DMetaLLM()  # init LLM model
+        self.llm = LLM()  # init LLM model
         self.db_summary = self.get_db_summary()
         self.sql_example = self._get_sql_example_llm()
         self.summary_index = FaissWrapper(text_chunks=self.db_summary)

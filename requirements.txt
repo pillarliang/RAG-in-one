@@ -4,12 +4,12 @@ langchain-openai
 numpy~=1.26.3
 pydantic~=2.9.2
 openai~=1.47.1
-faiss-gpu
+faiss-cpu
 pillow~=10.2.0
 transformers~=4.44.2
 sqlalchemy
 torch~=2.4.1+cu118
 pgvector
 python-dotenv
-byaldi~=0.0.4
+byaldi
 pdf2image~=1.17.0

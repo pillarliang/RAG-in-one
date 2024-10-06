@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from constants.prompts import CN_RAG_PROMPTS
 from constants.type import RAGRequest
-from model.llm import DMetaLLM
+from model.llm import LLM
 from core.vector_database.faiss_wrapper import FaissWrapper
 from core.retrieval.pre_retrieval import PreRetrievalService
 from core.retrieval.retrieval import RetrievalService
@@ -58,7 +58,7 @@ def get_rag_res(request: RAGRequest):
 
         # Generation
         prompts = CN_RAG_PROMPTS.format(question=query, contexts=retrieval_chunks)
-        llm = DMetaLLM()
+        llm = LLM()
         res = llm.get_response(prompts)
         return res
 

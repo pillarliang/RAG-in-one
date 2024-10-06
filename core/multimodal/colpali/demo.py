@@ -1,7 +1,7 @@
 import os
 from byaldi import RAGMultiModalModel
 
-from model.llm import DMetaLLM
+from model.llm import LLM
 from utility.tools import save_base64_image_2_local
 
 os.environ["HF_TOKEN"] = "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"
@@ -25,6 +25,6 @@ save_base64_image_2_local(results[0]["base64"], "test2.jpg")
 
 
 contexts = {"images": [results[0]["base64"]]}
-llm = DMetaLLM()
+llm = LLM()
 res = llm.get_multimodal_response(query=query, contexts=contexts)
 print(res)

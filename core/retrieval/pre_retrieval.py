@@ -1,6 +1,6 @@
 from constants.prompts import DECOMPOSE_QUERY_FOR_SQL
 from constants.type import RephraseQueryResponse, HydeResponse, DecomposeQueryResponse
-from model.llm import DMetaLLM
+from model.llm import LLM
 
 """
 ⚠️⚠️⚠️这一部分的效果的准确性未经过定量分析，仅用于跑通 demo 用。实际用需要在实际的数据集上测评下哪些组合的效果更优。
@@ -8,7 +8,7 @@ from model.llm import DMetaLLM
 
 
 class PreRetrievalService:
-    llm = DMetaLLM()
+    llm = LLM()
 
     @classmethod
     def rephrase_sub_queries(cls, query: str) -> str:
