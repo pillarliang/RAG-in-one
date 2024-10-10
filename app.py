@@ -1,7 +1,10 @@
 import logging
 import uvicorn
+import os
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from langchain_community.embeddings import ZhipuAIEmbeddings
+
 from constants.prompts import CN_RAG_PROMPTS
 from constants.type import RAGRequest
 from model.llm import LLM
@@ -33,13 +36,17 @@ app.add_middleware(
 )
 
 
+os.environ["OPENAI_API_KEY"] = "a2f2ae6bc9684b3706263c5d0ecc8ee2.fxFJYD33ocyYN25D"
+os.environ["OPENAI_BASE_URL"] = "https://open.bigmodel.cn/api/paas/v4/"
+
+
 @app.post("/query")
 def get_rag_res(request: RAGRequest):
     logger.info("Start handle query")
     query, chunks = request.query, request.chunks
     try:
         retrieval_chunks = set()
-        faiss_wrapper = FaissWrapper(text_chunks=chunks)
+        faiss_wrapper = FaissWrapper(text_chunks=chunks, embedding=ZhipuAIEmbeddings())
 
         # Rephrase.
         queries = PreRetrievalService.rephrase_sub_queries(query)
@@ -50,7 +57,7 @@ def get_rag_res(request: RAGRequest):
             retrieval_chunks.update(res)
 
         # HYDE
-        hyde_query = PreRetrievalService.hype(query)
+        hyde_query = PreRetrievalService.hyde(query)
         res = RetrievalService.semantic_search(
             hyde_query, faiss_wrapper, top_k=2
         )

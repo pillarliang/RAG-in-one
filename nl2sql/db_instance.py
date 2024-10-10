@@ -1,10 +1,9 @@
-import json
 import os
 import threading
 import logging
 
 from constants.prompts import CREATE_SAMPLE_SQL_FROM_TABLE
-from constants.type import GenerateSQLResponse, RDBType, GenerateSampleSQLResponse
+from constants.type import RDBType, GenerateSampleSQLResponse
 from model.llm import LLM
 from nl2sql.database.sql_factory import rdb_factory
 from core.vector_database.faiss_wrapper import FaissWrapper
@@ -71,8 +70,10 @@ class DBInstance:
         sample_sql = []
 
         for table in table_info_list:
-            response = self.llm.get_structured_response(CREATE_SAMPLE_SQL_FROM_TABLE.format(table_info=table),
-                                                        response_format=GenerateSampleSQLResponse)
+            response = self.llm.get_response(
+                CREATE_SAMPLE_SQL_FROM_TABLE.format(table_info=table),
+                response_format=GenerateSampleSQLResponse,
+            )
             sample_sql.extend(response["sql_list"])
 
         return sample_sql

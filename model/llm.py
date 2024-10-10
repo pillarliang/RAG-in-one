@@ -1,35 +1,40 @@
 import json
 import os
-from typing import List, Optional
+import instructor
+from typing import List, Optional, Type, Union
 from openai import OpenAI
 from constants.type import LLMModel, MultiModalParameters
-from utility.tools import batch_image_to_base64, PIL_2_base64, is_PIL_image, is_base64_image, is_base64
+from utility.tools import batch_image_to_base64, PIL_2_base64, is_PIL_image, is_base64
+from pydantic import BaseModel
 
-os.environ["OPENAI_API_KEY"] = "sk-sduyrRdYYOdGP4x06e97DdDe7bA74c7e8a5aC1051d5a2831"
-os.environ["OPENAI_BASE_URL"] = "https://aihubmix.com/v1"
+os.environ["OPENAI_API_KEY"] = "a2f2ae6bc9684b3706263c5d0ecc8ee2.fxFJYD33ocyYN25D"
+os.environ["OPENAI_BASE_URL"] = "https://open.bigmodel.cn/api/paas/v4/"
 
 
 class LLM:
-    def __init__(self, api_key: str = None, base_url: str = None, model: str = None):
+    def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None, model: Optional[str] = None):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         self.base_url = base_url or os.getenv("OPENAI_BASE_URL")
-        self.client = OpenAI(api_key=api_key, base_url=base_url)  # temporarily using openai service
+        self._check_valid()
 
-    def get_response(self, query: Optional[str, List[str]]):
-        completion = self.client.chat.completions.create(
-            model=LLMModel.Default.value,
-            messages=self._get_messages_for_llm(query),
-        )
-        return completion.choices[0].message.content
+        self.model = model or LLMModel.Default.value
+        self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+        self.structured_client = instructor.from_openai(OpenAI(api_key=api_key, base_url=base_url), mode=instructor.Mode.JSON_SCHEMA)
 
-    def get_structured_response(self, query: str, response_format):
-        completion = self.client.beta.chat.completions.parse(
-            model=LLMModel.Default.value,
-            messages=self._get_messages_for_llm(query),
-            response_format=response_format,
-        )
-
-        return json.loads(completion.choices[0].message.content)
+    def get_response(self, query: Union[str, List[str]], response_format: Type[BaseModel] = None):
+        if response_format:
+            structured_res = self.structured_client.chat.completions.create(
+                model=LLMModel.GLM_4_p.value,
+                messages=self._get_messages_for_llm(query),
+                response_model=response_format,
+            )
+            return structured_res
+        else:
+            completion = self.client.chat.completions.create(
+                model=LLMModel.GLM_4_p.value,
+                messages=self._get_messages_for_llm(query)
+            )
+            return completion.choices[0].message.content
 
     def get_multimodal_response(self, query: str, contexts: MultiModalParameters):
         texts = contexts.get("texts", "")
@@ -48,7 +53,8 @@ class LLM:
 
         if images and is_PIL_image(images[0]):
             for item in images:
-                messages.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{PIL_2_base64(item)}"}})
+                messages.append(
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{PIL_2_base64(item)}"}})
         elif images and is_base64(images[0]):
             for item in images:
                 messages.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{item}"}})
@@ -57,7 +63,7 @@ class LLM:
                 messages.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{item}"}})
 
         completion = self.client.chat.completions.create(
-            model=LLMModel.GPT_4o_mini.value,
+            model=LLMModel.Default.value,
             messages=[
                 {
                     "role": "user",
@@ -68,16 +74,24 @@ class LLM:
 
         return completion.choices[0].message.content
 
-    def _get_messages_for_llm(self, query: Optional[str, List[str]]):
+    def _get_messages_for_llm(self, query: Union[str, List[str]]):
         if isinstance(query, list):
             messages = query
         else:
             messages = [{"role": "user", "content": query}]
         return messages
 
+    def _check_valid(self):
+        if not self.api_key:
+            raise ValueError(
+                "API key is required. Please provide it as a parameter or set the OPENAI_API_KEY environment variable.")
+        if not self.base_url:
+            raise ValueError(
+                "Base URL is required. Please provide it as a parameter or set the OPENAI_BASE_URL environment variable.")
+
     def get_response_with_tools(self, tools: list, messages: list):
         response = self.client.chat.completions.create(
-            model=LLMModel.Default.value,
+            model=LLMModel.GLM_4_p.value,
             messages=messages,
             tools=tools,
             tool_choice="required"
@@ -117,5 +131,5 @@ if __name__ == "__main__":
     res = llm.get_response("What is the capital of China?")
     print(res)
 
-    res = llm.get_multimodal_response("请描述图片中的内容", {"images": ["pig.jpg"]})
-    print(res)
+    # res = llm.get_multimodal_response("请描述图片中的内容", {"images": ["pig.jpg"]})
+    # print(res)

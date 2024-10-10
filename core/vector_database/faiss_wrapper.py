@@ -3,17 +3,18 @@ Author: pillar
 Date: 2024-08-22
 Description: FaissWrapper class for building and searching Faiss index.
 """
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 import faiss
 import numpy as np
-from langchain_openai import OpenAIEmbeddings
+from langchain_core.embeddings import Embeddings
+from model.embedding import default_embedding_model
 
 
 class FaissWrapper:
     def __init__(
             self,
             text_chunks,
-            embedding = None,
+            embedding=Optional[type[Embeddings]],
             index_type="Flat",
             metric=faiss.METRIC_L2,
             nlist=100,
@@ -30,7 +31,7 @@ class FaissWrapper:
         :param hnsw_m: the parameter for HNSW index, representing the number of neighbors for each node.
         """
         self.text_chunks = text_chunks
-        self.embedding = embedding or OpenAIEmbeddings(api_key="sk-sduyrRdYYOdGP4x06e97DdDe7bA74c7e8a5aC1051d5a2831", base_url="https://aihubmix.com/v1") # TODO: move config to .env
+        self.embedding = embedding or default_embedding_model()
         self.index_type = index_type
         self.metric = metric
         self.nlist = nlist

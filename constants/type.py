@@ -44,6 +44,9 @@ class LLMModel(Enum):
     GPT_4o_mini = "gpt-4o-mini"
     GPT_35 = "gpt-3.5-turbo"
     Moonshoot_v1_8k = "moonshot-v1-8k"
+    GLM_4_p = "glm-4-plus"
+    GLM_4v = "glm-4v-plus"  # multimodal
+
 
 
 class RDBType(Enum):

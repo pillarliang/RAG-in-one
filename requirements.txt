@@ -11,5 +11,4 @@ sqlalchemy
 torch~=2.4.1+cu118
 pgvector
 python-dotenv
-byaldi
 pdf2image~=1.17.0
