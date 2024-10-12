@@ -11,6 +11,7 @@ from model.llm import LLM
 from core.vector_database.faiss_wrapper import FaissWrapper
 from core.retrieval.pre_retrieval import PreRetrievalService
 from core.retrieval.retrieval import RetrievalService
+from router import chat
 
 
 logging.basicConfig(format='%(asctime)s %(pathname)s line:%(lineno)d [%(levelname)s] %(message)s', level='INFO')
@@ -35,6 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(chat.router)
 
 os.environ["OPENAI_API_KEY"] = "a2f2ae6bc9684b3706263c5d0ecc8ee2.fxFJYD33ocyYN25D"
 os.environ["OPENAI_BASE_URL"] = "https://open.bigmodel.cn/api/paas/v4/"
@@ -72,6 +74,10 @@ def get_rag_res(request: RAGRequest):
     except Exception as e:
         logger.error(f"Error: {e}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Internal Server Error")
+
+
+
+
 
 @app.get("/")
 async def root():
