@@ -2,9 +2,7 @@ import os
 from typing import List
 
 from transformers import AutoModel
-from numpy.linalg import norm
 import numpy as np
-import torch
 import logging
 
 from utility.tools import load_images_from_folder

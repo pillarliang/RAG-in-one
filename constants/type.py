@@ -47,10 +47,3 @@ class LLMModel(Enum):
     GLM_4_p = "glm-4-plus"
     GLM_4v = "glm-4v-plus"  # multimodal
 
-
-
-class RDBType(Enum):
-    """Database type enumeration."""
-    MySQL = "mysql"
-    SQLite = "sqlite"
-    Postgresql = "postgresql"

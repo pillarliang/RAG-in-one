@@ -23,6 +23,7 @@ instructor = "^1.5.2"
 zhipuai = "^2.1.5.20230904"
 langchain-community = "^0.3.2"
 redis = "^5.1.1"
+transformers = "^4.45.2"
 
 
 [build-system]

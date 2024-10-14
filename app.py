@@ -1,4 +1,6 @@
 import logging
+from contextlib import asynccontextmanager
+
 import uvicorn
 import os
 from fastapi import FastAPI, HTTPException, status
@@ -12,12 +14,10 @@ from core.vector_database.faiss_wrapper import FaissWrapper
 from core.retrieval.pre_retrieval import PreRetrievalService
 from core.retrieval.retrieval import RetrievalService
 from router import chat
-
+from router.chat import postgres_db_client, redis_client
 
 logging.basicConfig(format='%(asctime)s %(pathname)s line:%(lineno)d [%(levelname)s] %(message)s', level='INFO')
 logger = logging.getLogger(__name__)
-
-app = FastAPI()
 
 # Allow CORS for local dev
 origins = [
@@ -28,17 +28,34 @@ origins = [
 
 ]
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic
+    logger.info("Starting up the application...")
+    # Initialize other resources if needed
+    try:
+        yield
+    finally:
+        # Shutdown logic
+        logger.info("Shutting down the application...")
+        postgres_db_client.engine.dispose()
+        redis_client.close()
+        logger.info("Resources have been cleaned up.")
+
+app = FastAPI(lifespan=lifespan)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"]
 )
-
 app.include_router(chat.router)
 
 os.environ["OPENAI_API_KEY"] = "a2f2ae6bc9684b3706263c5d0ecc8ee2.fxFJYD33ocyYN25D"
+os.environ["ZHIPUAI_API_KEY"] = "a2f2ae6bc9684b3706263c5d0ecc8ee2.fxFJYD33ocyYN25D"
 os.environ["OPENAI_BASE_URL"] = "https://open.bigmodel.cn/api/paas/v4/"
 
 
@@ -76,13 +93,10 @@ def get_rag_res(request: RAGRequest):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Internal Server Error")
 
 
-
-
-
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("app:app", host="0.0.0.0", port=8001, reload=True)
