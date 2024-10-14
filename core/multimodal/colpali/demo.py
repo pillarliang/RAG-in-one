@@ -13,7 +13,7 @@ os.environ["OPENAI_BASE_URL"] = "https://aihubmix.com/v1"
 RAG = RAGMultiModalModel.from_pretrained("vidore/colpali")
 RAG.index(
     input_path="./docs",
-    index_name="test",
+    index_name="notebooks",
     store_collection_with_index=True,
     overwrite=True,
 )

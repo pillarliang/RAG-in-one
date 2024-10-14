@@ -74,7 +74,8 @@ class LLM:
 
         return completion.choices[0].message.content
 
-    def _get_messages_for_llm(self, query: Union[str, List[str]]):
+    @staticmethod
+    def _get_messages_for_llm(query: Union[str, List[str]]):
         if isinstance(query, list):
             messages = query
         else:
@@ -90,13 +91,18 @@ class LLM:
                 "Base URL is required. Please provide it as a parameter or set the OPENAI_BASE_URL environment variable.")
 
     def get_response_with_tools(self, tools: list, messages: list):
-        response = self.client.chat.completions.create(
-            model=LLMModel.GLM_4_p.value,
-            messages=messages,
-            tools=tools,
-            tool_choice="required"
-        )
-        return response
+        try:
+            response = self.client.chat.completions.create(
+                model=LLMModel.GLM_4_p.value,
+                messages=messages,
+                tools=tools,
+                tool_choice="required"
+            )
+            return response
+        except Exception as e:
+            print("Unable to generate ChatCompletion response")
+            print(f"Exception: {e}")
+            return e
 
     def ask_images(self, query: str, images: List[str]):
         """Temporarily used for testing"""
