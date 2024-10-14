@@ -49,3 +49,6 @@ docker run -p 8000:8000 --name rag_demo rag_demo
 ```json
 "小明喜欢打蓝球"
 ```
+
+### [Agentic Patterns](./docs/agentic-patterns.md)
+四种 AI agent策略模式
