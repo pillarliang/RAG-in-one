@@ -9,9 +9,9 @@
 
 ## Query 路由
 
-## 混合检索
+## [混合检索](https://pillarliang.github.io/llm/app/hybrid-search)
 
-## [Agentic Patterns](./docs/agentic-patterns.md)
+## [Agentic Patterns](https://pillarliang.github.io/llm/app/agentic-patterns)
 四种 AI agent 策略模式
 
 ## 消息管理 & 语义缓存
