@@ -10,7 +10,7 @@ from langchain_community.embeddings import ZhipuAIEmbeddings
 from constants.prompts import CN_RAG_PROMPTS
 from constants.type import RAGRequest
 from model.llm import LLM
-from core.vector_database.faiss_wrapper import FaissWrapper
+from core.hybrid_search.vector_database.faiss_wrapper import FaissWrapper
 from core.retrieval.pre_retrieval import PreRetrievalService
 from core.retrieval.retrieval import RetrievalService
 from router import chat

@@ -6,7 +6,7 @@ Description: RetrievalService class for searching text chunks.
 
 import logging
 from typing import List
-from core.vector_database.jina_clip_wrapper import JinaClipWrapper
+from core.hybrid_search.vector_database.jina_clip_wrapper import JinaClipWrapper
 from utility.tools import load_images_from_folder
 
 logger = logging.getLogger(__name__)

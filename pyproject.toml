@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "rag-demo-v1"
+name = "rag-in-one"
 version = "0.1.0"
 description = ""
 authors = ["pillar <pillarliang21@gmail.com>"]
@@ -25,7 +25,8 @@ langchain-community = "^0.3.2"
 redis = "^5.1.1"
 transformers = "^4.45.2"
 torch = "2.0.1"
-
+spacy = "3.7.*"
+rank-bm25 = "^0.2.2"
 
 [build-system]
 requires = ["poetry-core"]

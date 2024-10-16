@@ -1,7 +1,7 @@
 from enum import Enum, auto
 import logging
 
-from core.vector_database.faiss_wrapper import FaissWrapper
+from core.hybrid_search.vector_database.faiss_wrapper import FaissWrapper
 
 logger = logging.getLogger(__name__)
 
