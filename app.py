@@ -44,10 +44,6 @@ app.add_middleware(
 app.include_router(chat.router)
 app.include_router(streaming.router)
 
-os.environ["ZHIPUAI_API_KEY"] = "a2f2ae6bc9684b3706263c5d0ecc8ee2.fxFJYD33ocyYN25D"
-os.environ["OPENAI_API_KEY"] = "sk-Fr7Bl02uYf5jXnkl4190783cFc414c68A2Fa75B68064FcDc"
-os.environ["OPENAI_BASE_URL"] = "https://aihubmix.com/v1/"
-
 
 @app.post("/query")
 def get_rag_res(request: RAGRequest):

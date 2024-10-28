@@ -1,18 +1,11 @@
-import json
 import os
 import instructor
 from typing import List, Optional, Type, Union
-
 from instructor import OpenAISchema
 from openai import OpenAI
 from constants.type import LLMModel, MultiModalParameters
 from utility.tools import batch_image_to_base64, PIL_2_base64, is_PIL_image, is_base64
 from pydantic import BaseModel
-
-# os.environ["OPENAI_API_KEY"] = "a2f2ae6bc9684b3706263c5d0ecc8ee2.fxFJYD33ocyYN25D"
-# os.environ["OPENAI_BASE_URL"] = "https://open.bigmodel.cn/api/paas/v4/"
-os.environ["OPENAI_API_KEY"] = "sk-Fr7Bl02uYf5jXnkl4190783cFc414c68A2Fa75B68064FcDcs"
-os.environ["OPENAI_BASE_URL"] = "https://aihubmix.com/v1/"
 
 
 class LLM:
