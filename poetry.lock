@@ -4706,6 +4706,17 @@ anyio = ">=3.4.0,<5"
 full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7)", "pyyaml"]
 
 [[package]]
+name = "streamingjson"
+version = "0.0.5"
+description = "A streamlined, user-friendly JSON streaming preprocessor, crafted in Python."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "streamingjson-0.0.5-py3-none-any.whl", hash = "sha256:c7baece0ff7ebce0a2a6baa0c1394dfdfe24a4a62f9635d4a17c2b548ff5eb76"},
+    {file = "streamingjson-0.0.5.tar.gz", hash = "sha256:93b0287ce4ad4089308fbe5745b8bfd63b39e445a6f3891474ea8491284a23e3"},
+]
+
+[[package]]
 name = "sympy"
 version = "1.13.3"
 description = "Computer algebra system (CAS) in Python"
@@ -5582,4 +5593,4 @@ pyjwt = ">=2.8.0,<2.9.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "757d350dfc246908b9b0641afb336a11bdacc4af1b83f97b7ce05fd76c09f12a"
+content-hash = "abd800c8b14db98f49cd38b1e67c885efa2673b0c0b1776c362f6715c0927225"

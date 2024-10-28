@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 
 class LLM:
-    def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None, model: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = "sk-Fr7Bl02uYf5jXnkl4190783cFc414c68A2Fa75B68064FcDc", base_url: Optional[str] = "https://aihubmix.com/v1", model: Optional[str] = None):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         self.base_url = base_url or os.getenv("OPENAI_BASE_URL")
         self._check_valid()
