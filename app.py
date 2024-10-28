@@ -1,32 +1,21 @@
 import logging
 from contextlib import asynccontextmanager
-
 import uvicorn
 import os
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_community.embeddings import ZhipuAIEmbeddings
-
 from constants.prompts import CN_RAG_PROMPTS
 from constants.type import RAGRequest
 from model.llm import LLM
 from core.hybrid_search.vector_database.faiss_wrapper import FaissWrapper
 from core.retrieval.pre_retrieval import PreRetrievalService
 from core.retrieval.retrieval import RetrievalService
-from router import chat
+from router import chat, streaming
 from router.chat import postgres_db_client, redis_client
 
 logging.basicConfig(format='%(asctime)s %(pathname)s line:%(lineno)d [%(levelname)s] %(message)s', level='INFO')
 logger = logging.getLogger(__name__)
-
-# Allow CORS for local dev
-origins = [
-    "http://localhost",
-    "http://localhost:8080",
-    "http://127.0.0.1",
-    "http://127.0.0.1:8080",
-
-]
 
 
 @asynccontextmanager
@@ -47,16 +36,17 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
 )
 app.include_router(chat.router)
+app.include_router(streaming.router)
 
-os.environ["OPENAI_API_KEY"] = "a2f2ae6bc9684b3706263c5d0ecc8ee2.fxFJYD33ocyYN25D"
 os.environ["ZHIPUAI_API_KEY"] = "a2f2ae6bc9684b3706263c5d0ecc8ee2.fxFJYD33ocyYN25D"
-os.environ["OPENAI_BASE_URL"] = "https://open.bigmodel.cn/api/paas/v4/"
+os.environ["OPENAI_API_KEY"] = "sk-Fr7Bl02uYf5jXnkl4190783cFc414c68A2Fa75B68064FcDc"
+os.environ["OPENAI_BASE_URL"] = "https://aihubmix.com/v1/"
 
 
 @app.post("/query")

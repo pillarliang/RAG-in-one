@@ -8,7 +8,6 @@ from fastapi import APIRouter, FastAPI
 from py_nl2sql.constants.type import RDBType
 from py_nl2sql.relational_database import create_rdb
 from pydantic import BaseModel
-from sqlalchemy import String, Text
 from sqlalchemy.orm import declarative_base, Mapped, mapped_column
 from sqlalchemy import Text, TIMESTAMP, String, func
 from model.llm import LLM

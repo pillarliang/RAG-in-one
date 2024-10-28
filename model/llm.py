@@ -2,13 +2,17 @@ import json
 import os
 import instructor
 from typing import List, Optional, Type, Union
+
+from instructor import OpenAISchema
 from openai import OpenAI
 from constants.type import LLMModel, MultiModalParameters
 from utility.tools import batch_image_to_base64, PIL_2_base64, is_PIL_image, is_base64
 from pydantic import BaseModel
 
-os.environ["OPENAI_API_KEY"] = "a2f2ae6bc9684b3706263c5d0ecc8ee2.fxFJYD33ocyYN25D"
-os.environ["OPENAI_BASE_URL"] = "https://open.bigmodel.cn/api/paas/v4/"
+# os.environ["OPENAI_API_KEY"] = "a2f2ae6bc9684b3706263c5d0ecc8ee2.fxFJYD33ocyYN25D"
+# os.environ["OPENAI_BASE_URL"] = "https://open.bigmodel.cn/api/paas/v4/"
+os.environ["OPENAI_API_KEY"] = "sk-Fr7Bl02uYf5jXnkl4190783cFc414c68A2Fa75B68064FcDcs"
+os.environ["OPENAI_BASE_URL"] = "https://aihubmix.com/v1/"
 
 
 class LLM:
@@ -24,17 +28,60 @@ class LLM:
     def get_response(self, query: Union[str, List[str]], response_format: Type[BaseModel] = None):
         if response_format:
             structured_res = self.structured_client.chat.completions.create(
-                model=LLMModel.GLM_4_p.value,
+                model=LLMModel.Default.value,
                 messages=self._get_messages_for_llm(query),
                 response_model=response_format,
             )
             return structured_res
         else:
             completion = self.client.chat.completions.create(
-                model=LLMModel.GLM_4_p.value,
+                model=LLMModel.Default.value,
                 messages=self._get_messages_for_llm(query)
             )
             return completion.choices[0].message.content
+
+    def get_function_calling_response(self, query: Union[str, List[str]], response_format: Type[BaseModel], stream=False):
+        """
+        根据 pydantic 模型, 生成 function calling 对应的 OpenAI Schema。
+        主要用于获取 json 对象。
+        """
+        class FunctionSchema(response_format, OpenAISchema):
+            pass
+
+        func_schema = {
+            "type": "function",
+            "function": FunctionSchema.openai_schema,
+        }
+
+        return self.client.chat.completions.create(
+            model=LLMModel.Default.value,
+            messages=self._get_messages_for_llm(query),
+            stream=stream,
+            tools=[func_schema],
+            tool_choice="required"
+        )
+
+    def get_response_with_tools(self, tools: list, query: Union[str, List[str]]):
+        """主要用与根据实际的函数生成的 schema """
+        try:
+            response = self.client.chat.completions.create(
+                model=LLMModel.Default.value,
+                messages=self._get_messages_for_llm(query),
+                tools=tools,
+                tool_choice="required"
+            )
+            return response
+        except Exception as e:
+            print("Unable to generate ChatCompletion response")
+            print(f"Exception: {e}")
+            return e
+
+    def get_json_mode_response(self, query: Union[str, List[str]]):
+        return self.client.chat.completions.create(
+            model=LLMModel.Default.value,
+            messages=self._get_messages_for_llm(query),
+            response_format={"type": "json_object"},
+        )
 
     def get_multimodal_response(self, query: str, contexts: MultiModalParameters):
         texts = contexts.get("texts", "")
@@ -90,20 +137,6 @@ class LLM:
             raise ValueError(
                 "Base URL is required. Please provide it as a parameter or set the OPENAI_BASE_URL environment variable.")
 
-    def get_response_with_tools(self, tools: list, messages: list):
-        try:
-            response = self.client.chat.completions.create(
-                model=LLMModel.GLM_4_p.value,
-                messages=messages,
-                tools=tools,
-                tool_choice="required"
-            )
-            return response
-        except Exception as e:
-            print("Unable to generate ChatCompletion response")
-            print(f"Exception: {e}")
-            return e
-
     def ask_images(self, query: str, images: List[str]):
         """Temporarily used for testing"""
         prompts = f"""
@@ -120,7 +153,7 @@ class LLM:
             messages.append({"type": "image_url", "image_url": {"url": item}})
 
         completion = self.client.chat.completions.create(
-            model=LLMModel.GPT_4o_mini.value,
+            model=LLMModel.Default.value,
             messages=[
                 {
                     "role": "user",
