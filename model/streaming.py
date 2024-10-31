@@ -16,6 +16,7 @@ class JSONStreamProcessor:
         self.value_buffer = ""
         self.field_processors = field_processors or {}
         self.current_processor = None
+        self.complete_response = ""
 
     @classmethod
     def is_json_field_end(cls, chunk: str) -> bool:
@@ -36,6 +37,7 @@ class JSONStreamProcessor:
 
             # 处理工具调用为None的情况
             if chunk.choices[0].delta.tool_calls is None and is_llm_response:
+                self.complete_response = self.lexer.complete_json()
                 yield {
                     "event": "end",
                     "data": "success"
